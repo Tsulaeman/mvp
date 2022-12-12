@@ -6,34 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    /**
-     * The amount of the product available
-     *
-     * @var int
-     */
-    public $amountAvailable;
-
-    /**
-     * The cost of the product
-     *
-     * @var int
-     */
-    public $cost;
-
-    /**
-     * The name of the product
-     *
-     * @var string
-     */
-    public $productName;
-
-    /**
-     * The name of the product
-     *
-     * @var int
-     */
-    public $sellerId;
-
     protected $fillable = [
         "amountAvailable",
         "cost",
@@ -42,11 +14,11 @@ class Product extends Model
 
     public function seller()
     {
-        return $this->belongsTo("App\User", "sellerId", "id");
+        return $this->belongsTo(User::class, "sellerId", "id");
     }
 
     public function buyers()
     {
-        return $this->belongsToMany("App\User", "buyer_product", "productId", "buyerId");
+        return $this->belongsToMany(User::class, "buyer_product", "productId", "buyerId");
     }
 }

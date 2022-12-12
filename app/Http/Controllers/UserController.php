@@ -5,17 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
-class ExampleController extends Controller
+class UserController extends Controller
 {
-    /**
-     * The user
-     *
-     * @var User
-     */
-    public $user;
-
     /**
      * Create a new controller instance.
      *
@@ -23,7 +17,12 @@ class ExampleController extends Controller
      */
     public function __construct(Request $request)
     {
-        $this->user = User::find($request->user()->id);
+        $this->middleware(
+            "auth:api",
+            [
+                "except" => ["create"]
+            ]
+        );
     }
 
     public function index() {
@@ -33,7 +32,7 @@ class ExampleController extends Controller
     }
 
     public function get($userId) {
-        $user = User::findOrFail($userId);
+        $user = User::with(["products"])->find($userId);
         return response()->json($user);
     }
 
@@ -41,18 +40,25 @@ class ExampleController extends Controller
     {
         $data = $request->all();
 
-        $request->validate([
-            "username" => "required|string|max:100|unique:users,username",
-            "deposit" => "required|numeric",
-            "role" => [
-                'required',
-                Rule::in([User::BUYER, User::SELLER])
+        $this->validate(
+            $request,
+            [
+                "username" => "required|string|max:100|unique:users,username",
+                "role" => [
+                    'required',
+                    Rule::in([User::BUYER, User::SELLER])
+                ],
+                "password" => "required|string"
             ]
-        ]);
+        );
+
+        $data["password"] = Hash::make($data["password"]);
+        $data["deposit"] = 0;
         $user = new User();
         $user->fill($data);
-
+        $user->forceFill(["password" => $data["password"]]);
         $user->save();
+
         return response()->json(
             $user
         );
@@ -60,22 +66,25 @@ class ExampleController extends Controller
 
     public function update(Request $request, $userId) {
         $data = $request->all();
-
-        $request->validate([
-            "username" => [
-                "required",
-                Rule::unique("users", "username")->ignore($request->user()->username)
-            ],
-            "deposit" => "required|numeric",
-            "role" => [
-                'required',
-                Rule::in([User::BUYER, User::SELLER])
+        $user = User::findOrFail($userId);
+        $this->validate(
+            $request,
+            [
+                "username" => [
+                    "required",
+                    Rule::unique("users", "id")->ignore($request->user()->id)
+                ],
+                "deposit" => "required|numeric",
+                "role" => [
+                    'required',
+                    Rule::in([User::BUYER, User::SELLER])
+                ]
             ]
-        ]);
-        $user = new User();
-        $user->fill($data);
+        );
 
+        $user->fill($data);
         $user->save();
+
         return response()->json(
             $user
         );
@@ -91,54 +100,74 @@ class ExampleController extends Controller
     }
 
     public function buy(Request $request) {
+        $user = auth()->user();
         $data = $request->all();
-        $request->validate([
-            "productId" => "required",
-            "amount" => "required"
-        ], $data);
+        $this->validate(
+            $request,
+            [
+                "productId" => "required",
+                "amount" => "required|numeric|min:1"
+            ]
+        );
 
         $product = Product::findOrFail($data["productId"]);
         $amountPurchased = $data["amount"];
         // Sometimes, the amount to be purchased might be greater than what is available
         $diff = $product->amountAvailable - $data["amount"];
         if($diff < 0) {
-            $amountPurchased -= $diff;
+            $amountPurchased += $diff;
         }
 
         $cost = $amountPurchased * $product->cost;
-        $this->user->deposit -= $cost;
+
+        if($user->deposit < $cost) {
+            return response()->json(
+                ["message" => "You do not have sufficient deposit"],
+                400
+            );
+        }
+        $user->deposit -= $cost;
         $product->amountAvailable -= $amountPurchased;
 
-        $this->user->save();
+        $user->products()->attach($product);
+        $user->save();
+
         $product->save();
+        $totalSpent = $user->products()->get()->map( function (Product $product) {
+            return $product->cost;
+        })->toArray();
 
         return response()->json([
-            "totalSpent" => "",
-            "products" => $this->user->products(),
-            "change" => []
+            "totalSpent" => array_sum($totalSpent),
+            "products" => $user->products()->get(),
+            "change" => $user->deposit
         ]);
     }
 
     public function deposit(Request $request) {
+        $user = $request->user();
         $data = $request->all();
-        $request->validate([
-            "deposit" => [
-                'required',
-                Rule::in([5, 10, 20, 50, 100]),
-                'numeric'
-            ],
-        ], $data);
+        $this->validate(
+            $request,
+            [
+                "deposit" => [
+                    'required',
+                    Rule::in([5, 10, 20, 50, 100]),
+                    'numeric'
+                ],
+            ]
+        );
 
-        $this->user->deposit += $data["deposit"];
-        $this->user->save();
+        $user->deposit += $data["deposit"];
+        $user->save();
 
         return response()->json(
-            $this->user
+            $user
         );
     }
 
     public function reset(Request $request) {
-        $this->user->deposit = 0;
-        $this->user->save();
+        $request->user()->deposit = 0;
+        $request->user()->save();
     }
 }

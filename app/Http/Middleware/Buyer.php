@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 
-class ExampleMiddleware
+class Buyer
 {
     /**
      * Handle an incoming request.
@@ -15,6 +15,13 @@ class ExampleMiddleware
      */
     public function handle($request, Closure $next)
     {
+        if(auth()->user() && !auth()->user()->isBuyer()) {
+            return response()->json(
+                ["message" => "Permission denied"],
+                403
+            );
+        }
+
         return $next($request);
     }
 }

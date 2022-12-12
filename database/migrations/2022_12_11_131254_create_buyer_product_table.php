@@ -28,6 +28,6 @@ class CreateBuyerProductTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('buyer_products');
+        Schema::dropIfExists('buyer_product');
     }
 }

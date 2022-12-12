@@ -8,8 +8,9 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
     use Authenticatable, Authorizable, HasFactory;
 
@@ -34,33 +35,32 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
-    /**
-     * The amount the user has in their vending machine account.
-     *
-     * @var integer
-     */
-    public $deposit;
-
-    /**
-     * The users unique identifier.
-     *
-     * @var string
-     */
-    public $username;
-
-    /**
-     * The role of this user, either buyer or seller.
-     *
-     * @var integer
-     */
-    public $role;
-
     public function products()
     {
-        if ($this->roleId === User::BUYER) {
-            return $this->belongsToMany("App\Product", "buyer_product", "buyerId", "productId");
+        if ($this->isBuyer()) {
+            return $this->belongsToMany(Product::class, "buyer_product", "buyerId", "productId");
         }
 
-        return $this->hasMany("App\Product", "sellerId");
+        return $this->hasMany(Product::class, "sellerId");
+    }
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    public function isBuyer()
+    {
+        return $this->role === User::BUYER;
+    }
+
+    public function isSeller()
+    {
+        return $this->role === User::SELLER;
     }
 }

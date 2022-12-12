@@ -17,7 +17,7 @@ class CreateProductTable extends Migration
             $table->id();
             $table->integer("amountAvailable");
             $table->integer("cost");
-            $table->integer("productName");
+            $table->string("productName");
             $table->integer("sellerId")->references("id")->on("users");
             $table->timestamps();
         });
@@ -30,6 +30,6 @@ class CreateProductTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('product');
+        Schema::dropIfExists('products');
     }
 }

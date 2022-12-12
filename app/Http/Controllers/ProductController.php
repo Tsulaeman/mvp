@@ -14,7 +14,8 @@ class ProductController extends Controller
      */
     public function __construct()
     {
-        //
+        $this->middleware("auth:api", ["except" => ["index", "get"] ]);
+        $this->middleware("seller", ["except" => ["index", "get", "buy"] ]);
     }
 
     public function index() {
@@ -32,15 +33,18 @@ class ProductController extends Controller
 
     public function create(Request $request) {
         $data = $request->all();
-        $request->validate([
-            "productName" => "required|string|max:100",
-            "cost" => "required|numeric",
-            "amountAvailable" => "required|numeric"
-        ], $data);
+        $this->validate(
+            $request,
+            [
+                "productName" => "required|string|max:100",
+                "cost" => "required|numeric",
+                "amountAvailable" => "required|numeric"
+            ]
+        );
 
         $product = new Product();
         $product->fill($data);
-        $product->associate($request->user());
+        $product->seller()->associate(auth()->user());
 
         $product->save();
         return response()->json(
@@ -50,11 +54,14 @@ class ProductController extends Controller
     public function update(Request $request, $productId) {
         $data = $request->all();
         $product = Product::findOrFail($productId);
-        $request->validate([
-            "productName" => "required|string|max:100",
-            "cost" => "required|numeric",
-            "amountAvailable" => "required|numeric"
-        ]);
+        $this->validate(
+            $request,
+            [
+                "productName" => "required|string|max:100",
+                "cost" => "required|numeric",
+                "amountAvailable" => "required|numeric"
+            ]
+        );
 
         $product->fill($data);
 
