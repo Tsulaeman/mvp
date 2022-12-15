@@ -1,16 +1,15 @@
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import AuthWrapper from './AuthWrapper';
 import NotFound from './pages/404';
-import Buyer from './pages/Buyer';
 import CreateProduct from './pages/CreateProduct';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import PageTemplate from './pages/PageTemplate';
 import Register from './pages/Register';
 import Seller from './pages/Seller';
-import { AppAction, AppActionType, AppState, RoleName } from './types';
+import { AppAction, AppActionType, AppState, AuthResponse, RoleName } from './types';
 
 
 const initialState: AppState = {
@@ -46,6 +45,19 @@ function reducer(state: AppState, action: AppAction) {
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   // const [token, setToken] = useState<string | null>();
+
+  useEffect(() => {
+    // TODO: Use redux to make token persist in app state
+    const auth: string | null = localStorage.getItem('auth');
+    let payload: AuthResponse;
+    if(auth) {
+      payload = JSON.parse(auth);
+      dispatch({
+        type: AppActionType.STORE_AUTH,
+        payload
+      });
+    }
+  }, [])
 
   return (
     <>

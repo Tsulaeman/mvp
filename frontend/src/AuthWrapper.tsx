@@ -1,18 +1,12 @@
 import { message } from "antd";
 import { useEffect } from "react";
 import RestService from "./services/RestService";
-import { AppActionType, AppComponentProps, AuthResponse, AuthUser } from "./types";
+import { AppActionType, AppComponentProps, AuthResponse } from "./types";
 
 export default function AuthWrapper({state, dispatch, children}: AppComponentProps) {
 
     function logout() {
-        return new RestService().logout().then(resp => {
-            localStorage.clear();
-            window.location.replace("/login");
-          }).catch(e => {
-            localStorage.clear();
-            window.location.replace("/login");
-          });
+        return new RestService().logout();
     }
 
     useEffect(() => {

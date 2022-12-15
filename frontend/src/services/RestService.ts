@@ -1,5 +1,5 @@
 import endpoints from "../endpoints";
-import { AppConfig, Auth, AuthResponse, AuthUser, LaravelPagination, Product } from "../types";
+import { AppConfig, Auth, AuthResponse, AuthUser, BuyProductResponse, LaravelPagination, Product } from "../types";
 import AbstractRestService from "./AbstractRestService";
 
 const { baseUrl } = endpoints;
@@ -36,9 +36,11 @@ export default class RestService extends AbstractRestService {
         const response = await this.post('auth/logout', null);
         const responseData = await response.json();
         if(!response.ok) {
+            window.location.replace("/login");
             throw responseData
         }
         localStorage.clear();
+        window.location.replace("/login");
         return responseData;
     }
 
@@ -113,6 +115,20 @@ export default class RestService extends AbstractRestService {
         return responseData;
     }
 
+    /**
+     * Buy a product
+     *
+     * @returns  Promise<AuthUser>
+     */
+    async buyProduct(productId: number, amount: number): Promise<BuyProductResponse> {
+        const response = await this.post('buyers/buy', {productId, amount });
+        const responseData = await response.json();
+        if(!response.ok) {
+            throw responseData
+        }
+        return responseData;
+    }
+
 
     /**
      * Get the apps config
@@ -141,6 +157,5 @@ export default class RestService extends AbstractRestService {
         }
         return responseData;
     }
-
 
 }

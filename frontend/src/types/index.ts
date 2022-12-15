@@ -50,6 +50,12 @@ export interface Product {
     sellerId: string
 }
 
+export interface BuyProductResponse {
+    change: number;
+    totalSpent: number;
+    products: Product[];
+}
+
 export interface AppRoles {
     buyer: number;
     seller: number
