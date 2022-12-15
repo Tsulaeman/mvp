@@ -2,6 +2,8 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
+use App\Models\User;
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -15,6 +17,15 @@
 
 $router->get('/', function () use ($router) {
     return $router->app->version();
+});
+
+$router->get('config', function () use ($router) {
+    return [
+        'roles' => [
+            'buyer' => User::BUYER,
+            'seller' => User::SELLER
+        ]
+    ];
 });
 
 $router->group(['prefix' => 'auth'], function () use ($router) {

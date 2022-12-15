@@ -167,7 +167,12 @@ class UserController extends Controller
     }
 
     public function reset(Request $request) {
-        $request->user()->deposit = 0;
-        $request->user()->save();
+        $user = $request->user();
+        $user->deposit = 0;
+        $user->save();
+
+        return response()->json(
+            $user
+        );
     }
 }

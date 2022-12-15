@@ -35,6 +35,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
+    protected $appends = ["roleName"];
+
     public function products()
     {
         if ($this->isBuyer()) {
@@ -62,5 +64,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function isSeller()
     {
         return $this->role === User::SELLER;
+    }
+
+    public function getRoleNameAttribute()
+    {
+        return $this->isBuyer() ? "buyer" : "seller";
     }
 }

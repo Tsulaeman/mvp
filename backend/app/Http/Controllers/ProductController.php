@@ -19,6 +19,12 @@ class ProductController extends Controller
     }
 
     public function index() {
+        if(auth()->user() && auth()->user()->isSeller()) {
+            return response()->json(
+                auth()->user()->products()->paginate()
+            );
+        }
+
         return response()->json(
             Product::paginate()
         );

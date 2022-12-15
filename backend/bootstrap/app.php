@@ -73,6 +73,10 @@ $app->configure('jwt');
 |
 */
 
+$app->middleware([
+    App\Http\Middleware\Cors::class
+]);
+
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'buyer' => App\Http\Middleware\Buyer::class,
