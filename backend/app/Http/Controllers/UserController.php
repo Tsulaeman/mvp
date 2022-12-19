@@ -116,6 +116,11 @@ class UserController extends Controller
         $diff = $product->amountAvailable - $data["amount"];
         if($diff < 0) {
             $amountPurchased += $diff;
+            // We can decide to either let the buyer buy only what is available or throw an error
+            return response()->json(
+                ["message" => "You can only buy {$product->amountAvailable} of this product."],
+                422
+            );
         }
 
         $cost = $amountPurchased * $product->cost;
@@ -123,9 +128,10 @@ class UserController extends Controller
         if($user->deposit < $cost) {
             return response()->json(
                 ["message" => "You do not have sufficient deposit"],
-                400
+                422
             );
         }
+
         $user->deposit -= $cost;
         $product->amountAvailable -= $amountPurchased;
 
