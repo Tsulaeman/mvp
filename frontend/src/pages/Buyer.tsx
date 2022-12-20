@@ -1,7 +1,6 @@
 import { Button, Col, Form, Row, InputNumber, message } from "antd";
 import RestService from "../services/RestService";
 import { setFormErrors } from "../utils/utils";
-import { AppActionType } from "../types";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { loadUserSuccess, selectUser } from "../store/userSlice";
 

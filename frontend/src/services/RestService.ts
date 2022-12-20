@@ -1,5 +1,5 @@
 import endpoints from "../endpoints";
-import { AppConfig, Auth, AuthResponse, AuthUser, BuyProductResponse, LaravelPagination, Product } from "../types";
+import { AppConfig, Auth, AuthResponse, AuthUser, BuyProductResponse, LaravelPagination, LaravelPaginationFilter, Product } from "../types";
 import AbstractRestService from "./AbstractRestService";
 
 const { baseUrl } = endpoints;
@@ -36,6 +36,7 @@ export default class RestService extends AbstractRestService {
         const response = await this.post('auth/logout', null);
         const responseData = await response.json();
         if(!response.ok) {
+            localStorage.clear();
             window.location.replace("/login");
             throw responseData
         }
@@ -78,8 +79,8 @@ export default class RestService extends AbstractRestService {
      *
      * @returns  Promise<AuthUser>
      */
-    async getProducts(): Promise<LaravelPagination<Product[]>> {
-        const response = await this.get('products', null);
+    async getProducts(filter: LaravelPaginationFilter): Promise<LaravelPagination<Product[]>> {
+        const response = await this.get('products', filter);
         const responseData = await response.json();
         if(!response.ok) {
             throw responseData
@@ -93,7 +94,7 @@ export default class RestService extends AbstractRestService {
      * @returns  Promise<AuthUser>
      */
     async getProduct(productId: number | null = null): Promise<Product> {
-        const response = await this.get(`products/${productId}`, null);
+        const response = await this.get(`products/product/${productId}`, null);
         const responseData = await response.json();
         if(!response.ok) {
             throw responseData
@@ -108,6 +109,20 @@ export default class RestService extends AbstractRestService {
      */
      async addProduct(product: Product): Promise<Product> {
         const response = await this.post('/products/create', product);
+        const responseData = await response.json();
+        if(!response.ok) {
+            throw responseData
+        }
+        return responseData;
+    }
+
+    /**
+     * Get the apps config
+     *
+     * @returns  Promise<AuthUser>
+     */
+    async updateProduct(product: Product): Promise<Product> {
+        const response = await this.put('/products/update/' + product.id, product);
         const responseData = await response.json();
         if(!response.ok) {
             throw responseData

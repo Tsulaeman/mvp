@@ -1,10 +1,10 @@
-import { Button, Col, Form, InputNumber, message, Modal, Row, Table, TableColumnsType } from "antd";
+import { Button, Col, Form, InputNumber, message, Modal, Row, Table, TableColumnsType, TablePaginationConfig } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RestService from "../services/RestService";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { loadUserSuccess, selectUser } from "../store/userSlice";
-import { AuthUser, LaravelPagination, Product, RoleName } from "../types";
+import { AuthUser, LaravelPagination, LaravelPaginationFilter, Product, RoleName } from "../types";
 
 export default function Seller() {
     const [dataSource, setDataSource] = useState<LaravelPagination<Product[]>>();
@@ -12,16 +12,17 @@ export default function Seller() {
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
     const navigate = useNavigate();
+    const [filter, setFilter] = useState<LaravelPaginationFilter>({page: 1, limit: 10});
 
     const client = useMemo(() => new RestService(), []);
 
     useEffect(() => {
-        client.getProducts().then(resp => {
+        client.getProducts(filter).then(resp => {
             setDataSource(resp);
         }).catch(e => {
             message.error(e.message || e.error);
         });
-    }, [client]);
+    }, [client, filter]);
 
     const buy = (record: Product, user: AuthUser) => {
         Modal.confirm({
@@ -132,6 +133,19 @@ export default function Seller() {
         }
     ];
 
+    const pagination: TablePaginationConfig = {
+        current: dataSource?.current_page,
+        total: dataSource?.total,
+        showSizeChanger: true,
+        onChange: (page, pageSize) => {
+            setFilter({
+                ...filter,
+                page,
+                limit: pageSize
+            })
+        }
+    };
+
     return (
         <Row
             justify={"center"}
@@ -144,6 +158,7 @@ export default function Seller() {
                     dataSource={dataSource?.data}
                     columns={columns}
                     rowKey={r => r.id}
+                    pagination={pagination}
                 />
             </Col>
         </Row>

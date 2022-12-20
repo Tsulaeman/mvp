@@ -29,7 +29,7 @@ const userSlice = createSlice({
                 user: action.payload
             }
         },
-        loadUserFailure: (state, action: PayloadAction<AuthUser>) => {
+        loadUserFailure: (state) => {
             return {
                 ...state,
                 loading: false,

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Breadcrumb, theme, Layout } from "antd";
+import { Menu, Breadcrumb, theme, Layout, Spin } from "antd";
 import { Link, Outlet } from "react-router-dom";
 import { ItemType } from "antd/es/menu/hooks/useItems";
-import { AppActionType, RoleName } from "../types";
+import { RoleName } from "../types";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { selectUser } from "../store/userSlice";
-import { logout, selectToken } from "../store/authSlice";
+import { selectLoading, selectUser } from "../store/userSlice";
+import { logout, selectAuthLoading, selectToken } from "../store/authSlice";
 
 
 
@@ -16,6 +16,8 @@ export default function PageTemplate() {
     const user = useAppSelector(selectUser);
     const accessToken = useAppSelector(selectToken);
     const [links, setLinks] = useState<ItemType[]>([]);
+    const authLoading = useAppSelector(selectAuthLoading);
+    const userLoading = useAppSelector(selectLoading);
 
     useEffect(() => {
 
@@ -43,7 +45,7 @@ export default function PageTemplate() {
         if(user?.roleName === RoleName.BUYER) {
             links.unshift({
                 key: "Deposit",
-                label: <Link to={"/"}>Deposit</Link>
+                label: <Link to={"/deposit"}>Deposit</Link>
             });
         }
 
@@ -67,31 +69,33 @@ export default function PageTemplate() {
     } = theme.useToken();
 
     return (
-        <Layout className="layout">
-            <Header>
-                <div className="logo" />
-                <Menu
-                    theme="dark"
-                    mode="horizontal"
-                    defaultSelectedKeys={['2']}
-                    items={links}
-                    style={{ float: "right" }}
-                />
-            </Header>
-            <Content style={{ padding: '0 50px', height: "relative" }}>
-                <Breadcrumb style={{ margin: '16px 0' }}>
-                <Breadcrumb.Item>Home</Breadcrumb.Item>
-                <Breadcrumb.Item>List</Breadcrumb.Item>
-                <Breadcrumb.Item>App</Breadcrumb.Item>
-                </Breadcrumb>
-                <div
-                    className="site-layout-content"
-                    style={{ background: colorBgContainer, padding: "40px 0"}}
-                >
-                    <Outlet />
-                </div>
-            </Content>
-            <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
-        </Layout>
+        <Spin spinning={authLoading || userLoading}>
+            <Layout className="layout">
+                <Header>
+                    <div className="logo" />
+                    <Menu
+                        theme="dark"
+                        mode="horizontal"
+                        defaultSelectedKeys={['2']}
+                        items={links}
+                        style={{ float: "right" }}
+                    />
+                </Header>
+                <Content style={{ padding: '0 50px', height: "relative" }}>
+                    <Breadcrumb style={{ margin: '16px 0' }}>
+                    <Breadcrumb.Item>Home</Breadcrumb.Item>
+                    <Breadcrumb.Item>List</Breadcrumb.Item>
+                    <Breadcrumb.Item>App</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <div
+                        className="site-layout-content"
+                        style={{ background: colorBgContainer, padding: "40px 0"}}
+                    >
+                        <Outlet />
+                    </div>
+                </Content>
+                <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
+            </Layout>
+        </Spin>
     );
 }

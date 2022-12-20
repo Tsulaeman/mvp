@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import RestService from "./services/RestService";
 import { loginSuccess, selectLogout } from "./store/authSlice";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { loadUser, loadUserSuccess } from "./store/userSlice";
+import { loadUser, loadUserFailure, loadUserSuccess } from "./store/userSlice";
 import { AuthResponse } from "./types";
 
 export default function AuthWrapper({ children }: { children: any }) {
@@ -20,6 +20,7 @@ export default function AuthWrapper({ children }: { children: any }) {
         new RestService().me().then(me => {
           dispatch(loadUserSuccess(me));
         }).catch(e => {
+            dispatch(loadUserFailure());
             message.error(e.message || e.error);
             logout();
         });
@@ -33,20 +34,13 @@ export default function AuthWrapper({ children }: { children: any }) {
             logout();
         }
 
-        // If access token gets deleted from localStorage
-        const interval = setInterval(() => {
-          if(!auth || !auth.access_token) {
-            logout();
-          }
-        }, 500);
-
         // logic to refresh token here if there is activity, but for now we just logout instead
         const tokenInterval = setInterval(() => {
               logout();
           }, Number(auth?.expires_in) * 1000);
 
         return  () => {
-          clearInterval(interval);
+          // clearInterval(interval);
           clearInterval(tokenInterval);
         }
       }, [shouldLogout, dispatch]);

@@ -88,3 +88,8 @@ export interface AppComponentProps {
     user: AuthUser;
     [key: string]: any;
 }
+
+export interface LaravelPaginationFilter {
+    page: number;
+    limit: number;
+}
