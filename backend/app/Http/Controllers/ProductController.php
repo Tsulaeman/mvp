@@ -18,15 +18,16 @@ class ProductController extends Controller
         $this->middleware("seller", ["except" => ["index", "get", "buy"] ]);
     }
 
-    public function index() {
+    public function index(Request $request) {
+        $limit = $request->limit ?? 10;
         if(auth()->user() && auth()->user()->isSeller()) {
             return response()->json(
-                auth()->user()->products()->paginate()
+                auth()->user()->products()->paginate($limit)
             );
         }
 
         return response()->json(
-            Product::paginate()
+            Product::paginate($limit)
         );
     }
 
