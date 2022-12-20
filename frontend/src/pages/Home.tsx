@@ -1,15 +1,18 @@
-import { AppComponentProps, RoleName } from "../types";
+import { useAppSelector } from "../store/hooks";
+import { selectUser } from "../store/userSlice";
+import { RoleName } from "../types";
 import Buyer from "./Buyer";
 import Seller from "./Seller";
 
-export default function Home({ state, dispatch }: AppComponentProps) {
+export default function Home() {
+    const user = useAppSelector(selectUser);
     return (
         <>
         {
-            state?.user?.roleName === RoleName.BUYER ? (
-                <Buyer state={state} dispatch={dispatch} />
+            user?.roleName === RoleName.BUYER ? (
+                <Buyer />
             ) : (
-                <Seller state={state} dispatch={dispatch}/>
+                <Seller />
             )
         }
         </>

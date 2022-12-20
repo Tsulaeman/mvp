@@ -85,5 +85,6 @@ export interface AppAction {
 export interface AppComponentProps {
     dispatch: Dispatch<AppAction>;
     state: AppState | undefined;
+    user: AuthUser;
     [key: string]: any;
 }

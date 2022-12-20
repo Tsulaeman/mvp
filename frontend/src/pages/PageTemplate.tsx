@@ -1,63 +1,70 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, Breadcrumb, theme, Layout } from "antd";
 import { Link, Outlet } from "react-router-dom";
 import { ItemType } from "antd/es/menu/hooks/useItems";
-import { AppActionType, AppComponentProps, RoleName } from "../types";
+import { AppActionType, RoleName } from "../types";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { selectUser } from "../store/userSlice";
+import { logout, selectToken } from "../store/authSlice";
 
 
 
 const { Header, Content, Footer } = Layout;
 
-export default function PageTemplate({ state, dispatch }: AppComponentProps) {
+export default function PageTemplate() {
+    const dispatch = useAppDispatch();
+    const user = useAppSelector(selectUser);
+    const accessToken = useAppSelector(selectToken);
+    const [links, setLinks] = useState<ItemType[]>([]);
+
+    useEffect(() => {
+
+        const links = [
+            {
+                key: "products",
+                label: <Link to={"products"}>Products</Link>
+            },
+            {
+                key: "logout",
+                label: "Logout",
+                onClick: () => {
+                    dispatch(logout())
+                },
+            }
+        ];
+
+        if(user?.roleName === RoleName.SELLER) {
+            links.unshift({
+                key: "create",
+                label: <Link to={"create-product"}>Create Product</Link>
+            });
+        }
+
+        if(user?.roleName === RoleName.BUYER) {
+            links.unshift({
+                key: "Deposit",
+                label: <Link to={"/"}>Deposit</Link>
+            });
+        }
+
+        setLinks([
+            ...(accessToken ? links : [
+                    {
+                        key: "login",
+                        label: <Link to={"login"}>Login</Link>
+                    },
+                    {
+                        key: "register",
+                        label: <Link to={"register"}>Register</Link>
+                    }
+                ]
+            ),
+        ]);
+    }, [accessToken, user, dispatch]);
 
     const {
         token: { colorBgContainer },
     } = theme.useToken();
-
-    const authLinks: ItemType[] = [
-        {
-            key: "login",
-            label: <Link to={"login"}>Login</Link>
-        },
-        {
-            key: "register",
-            label: <Link to={"register"}>Register</Link>
-        }
-    ];
-
-    const links: ItemType[] = [
-        {
-            key: "products",
-            label: <Link to={"products"}>Products</Link>
-        },
-        {
-            key: "logout",
-            label: "Logout",
-            onClick: () => {
-                dispatch({
-                    type: AppActionType.LOGOUT,
-                    payload: null
-                })
-            },
-        }
-    ];
-    if(state?.user?.roleName === RoleName.SELLER) {
-        links.push({
-            key: "create",
-            label: <Link to={"create-product"}>Create Product</Link>
-        });
-    }
-
-    if(state?.user?.roleName === RoleName.BUYER) {
-        links.unshift({
-            key: "Deposit",
-            label: <Link to={"/"}>Deposit</Link>
-        });
-    }
-
-    const navLinks: ItemType[] = [
-        ...(state?.auth?.access_token ? links : authLinks),
-    ];
 
     return (
         <Layout className="layout">
@@ -67,7 +74,7 @@ export default function PageTemplate({ state, dispatch }: AppComponentProps) {
                     theme="dark"
                     mode="horizontal"
                     defaultSelectedKeys={['2']}
-                    items={navLinks}
+                    items={links}
                     style={{ float: "right" }}
                 />
             </Header>

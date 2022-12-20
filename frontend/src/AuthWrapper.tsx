@@ -1,9 +1,14 @@
 import { message } from "antd";
 import { useEffect } from "react";
 import RestService from "./services/RestService";
-import { AppActionType, AppComponentProps, AuthResponse } from "./types";
+import { loginSuccess, selectLogout } from "./store/authSlice";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { loadUser, loadUserSuccess } from "./store/userSlice";
+import { AuthResponse } from "./types";
 
-export default function AuthWrapper({state, dispatch, children}: AppComponentProps) {
+export default function AuthWrapper({ children }: { children: any }) {
+  const shouldLogout = useAppSelector(selectLogout);
+  const dispatch = useAppDispatch();
 
     function logout() {
         return new RestService().logout();
@@ -11,11 +16,9 @@ export default function AuthWrapper({state, dispatch, children}: AppComponentPro
 
     useEffect(() => {
         // Fetch the user and logout if fails
+        dispatch(loadUser());
         new RestService().me().then(me => {
-            dispatch({
-                type: AppActionType.STORE_USER,
-                payload: me
-            })
+          dispatch(loadUserSuccess(me));
         }).catch(e => {
             message.error(e.message || e.error);
             logout();
@@ -26,7 +29,7 @@ export default function AuthWrapper({state, dispatch, children}: AppComponentPro
             &&
             JSON.parse(localStorage.getItem('auth') as string);
 
-        if(state?.logout) {
+        if(shouldLogout) {
             logout();
         }
 
@@ -46,7 +49,7 @@ export default function AuthWrapper({state, dispatch, children}: AppComponentPro
           clearInterval(interval);
           clearInterval(tokenInterval);
         }
-      }, [state?.logout, dispatch]);
+      }, [shouldLogout, dispatch]);
 
       return children;
 

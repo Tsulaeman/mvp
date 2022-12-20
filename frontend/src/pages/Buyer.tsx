@@ -1,18 +1,19 @@
 import { Button, Col, Form, Row, InputNumber, message } from "antd";
 import RestService from "../services/RestService";
 import { setFormErrors } from "../utils/utils";
-import { AppActionType, AppComponentProps } from "../types";
+import { AppActionType } from "../types";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { loadUserSuccess, selectUser } from "../store/userSlice";
 
 
-export default function Buyer({ state, dispatch }: AppComponentProps) {
+export default function Buyer() {
     const [form] = Form.useForm();
+    const dispatch = useAppDispatch();
+    const user = useAppSelector(selectUser);
 
     const onFinish = (values: any) => {
         new RestService().deposit(values.deposit).then(resp => {
-            dispatch({
-                type: AppActionType.STORE_USER,
-                payload: resp
-            });
+            dispatch(loadUserSuccess(resp));
 
             message.success("Successfully deposited " + values.deposit);
             form.resetFields();
@@ -26,10 +27,7 @@ export default function Buyer({ state, dispatch }: AppComponentProps) {
 
     const resetDeposit = () => {
         new RestService().resetDeposit().then(resp => {
-            dispatch({
-                type: AppActionType.STORE_USER,
-                payload: resp
-            });
+            dispatch(loadUserSuccess(resp));
 
             message.success("Successfully reset deposit");
         })
@@ -45,9 +43,9 @@ export default function Buyer({ state, dispatch }: AppComponentProps) {
         <Row justify={"center"} align={"middle"}>
             <Col sm={24} xs={24} md={12} lg={8}>
                 <ul>
-                    <li>Username: {state?.user?.username}</li>
-                    <li>Deposit: {state?.user?.deposit}</li>
-                    <li>Role: {state?.user?.roleName}</li>
+                    <li>Username: {user?.username}</li>
+                    <li>Deposit: {user?.deposit}</li>
+                    <li>Role: {user?.roleName}</li>
                     <li>
                         <Button
                             type="primary"

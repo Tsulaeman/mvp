@@ -1,12 +1,14 @@
 import { Button, Col, Form, Row, Input, Radio } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useMemo, useState } from "react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import RestService from "../services/RestService";
-import { AppActionType, AppComponentProps, AppConfig, RoleName } from "../types";
+import { useAppDispatch } from "../store/hooks";
+import { AppActionType, AppConfig, RoleName } from "../types";
 import { setFormErrors } from "../utils/utils";
 
-export default function Register({ state, dispatch }: AppComponentProps) {
+export default function Register() {
+    const dispatch = useAppDispatch();
 
     const [form] = useForm();
     const navigate = useNavigate();

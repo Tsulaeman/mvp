@@ -1,24 +1,25 @@
 import { Button, Col, Form, Row, Input } from "antd";
 import RestService from "../services/RestService";
 import { setFormErrors } from "../utils/utils";
-import { AppActionType, AppComponentProps } from "../types";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../store/hooks";
+import { login, loginFailure, loginSuccess } from "../store/authSlice";
 
 
-export default function Login({ state, dispatch }: AppComponentProps) {
+export default function Login() {
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     const onFinish = (values: any) => {
+        dispatch(login());
         new RestService().login(values).then(resp => {
-            dispatch({
-                type: AppActionType.STORE_AUTH,
-                payload: resp
-            });
             localStorage.setItem('token', resp.access_token);
+            dispatch(loginSuccess(resp));
             navigate(`/`);
         })
         .catch(e => {
+            dispatch(loginFailure());
             if(e) {
                 setFormErrors(form, e);
             }

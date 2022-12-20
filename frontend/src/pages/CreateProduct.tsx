@@ -1,14 +1,16 @@
-import { Button, Col, Form, Input, InputNumber, message, Row, Table, TableColumnsType } from "antd";
+import { Button, Col, Form, Input, InputNumber, message, Row } from "antd";
 import { useState } from "react";
 import RestService from "../services/RestService";
-import { AppComponentProps } from "../types";
+import { useAppSelector } from "../store/hooks";
+import { selectUser } from "../store/userSlice";
 
-export default function CreateProduct({ state, dispatch }: AppComponentProps) {
+export default function CreateProduct() {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const user = useAppSelector(selectUser);
 
     const onFinish = (values: any) => {
-        if(state?.user?.id) {
+        if(user?.id) {
             setLoading(true);
             new RestService().addProduct(values).then(resp => {
                 setLoading(false);
